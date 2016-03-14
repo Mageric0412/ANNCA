@@ -49,8 +49,8 @@ public:
 
 protected:
 	//自定义draw实现
-	void onDraw(const cocos2d::Mat4 &transform, bool transformUpdated);
-	cocos2d::CustomCommand _customCommand;
+	void onDraw(const Mat4 &transform, uint32_t flags);
+	CustomCommand _customCommand;
 
 private:
 	//重载draw方法
@@ -61,7 +61,9 @@ private:
 	std::vector<double> getNormalInput(int i,int j);
 	RVO::Vector2 getANNoutputVec();
 	void setNewAvoidVelocity(RVO::RVOSimulator *sim,int agenti,int agentj,int bestMatch,double collishift);
-	
+	std::vector<Vec2> lastPos,curPos;
+	std::vector<vector<Vec2>> agentPos;
+	std::vector<int> colorVec;
 	Size s;
 	RVO::RVOSimulator *Crowd_Sim;
 	int agentno;

@@ -18,9 +18,11 @@ void buildRoadmap(RVO::RVOSimulator *sim);
 
 void updateVisualization(RVO::RVOSimulator *sim);
 
-void setPreferredVelocities(RVO::RVOSimulator *sim,std::vector<RVO::Vector2> goals);
+void setPreferredVelocities(RVO::RVOSimulator *sim);
 
 bool reachedGoal(RVO::RVOSimulator *sim,std::vector<RVO::Vector2> goals);
+
+bool reachedGoal(RVO::RVOSimulator *sim);
 
 void setPreferredVelocities(RVO::RVOSimulator *sim,int i,std::vector<RVO::Vector2> goals);
 

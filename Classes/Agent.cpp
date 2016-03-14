@@ -57,7 +57,7 @@
 
 #include "KdTree.h"
 #include "Obstacle.h"
-
+#define RVO_ON
 namespace RVO {
 	Agent::Agent(RVOSimulator *sim) : maxNeighbors_(0), maxSpeed_(0.0f), neighborDist_(0.0f), radius_(0.0f), sim_(sim), timeHorizon_(0.0f), timeHorizonObst_(0.0f), id_(0) { }
 
@@ -425,16 +425,21 @@ namespace RVO {
 			obstacleNeighbors_[i] = std::make_pair(distSq, obstacle);
 		}
 	}
-	///////////////////
-	//change
+
+	/************************************************************************/
+	//RVO_ANN
 	void Agent::update()
 	{
-		velocity_ = prefVelocity_;
-		//velocity_ = newVelocity_;
+		#ifdef RVO_ON
+		velocity_ = newVelocity_;   //RVO
+       #endif 
+       #ifndef RVO_ON
+		velocity_ = prefVelocity_;   //ANN
+        #endif
 		position_ += velocity_ * sim_->timeStep_;
 	}
+	/************************************************************************/
 
-	
 	bool linearProgram1(const std::vector<Line> &lines, size_t lineNo, float radius, const Vector2 &optVelocity, bool directionOpt, Vector2 &result)
 	{
 		const float dotProduct = lines[lineNo].point * lines[lineNo].direction;

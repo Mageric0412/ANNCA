@@ -58,7 +58,7 @@
 #include "Agent.h"
 #include "KdTree.h"
 #include "Obstacle.h"
-
+#define RVO_ON
 #ifdef _OPENMP
 #include <omp.h>
 #endif
@@ -190,10 +190,15 @@ namespace RVO {
 #ifdef _OPENMP
 #pragma omp parallel for
 #endif
+
+#ifdef RVO_ON
+
 		for (int i = 0; i < static_cast<int>(agents_.size()); ++i) {
-			//agents_[i]->computeNeighbors();
-			//agents_[i]->computeNewVelocity();
+			agents_[i]->computeNeighbors();
+			agents_[i]->computeNewVelocity();
 		}
+
+#endif
 
 #ifdef _OPENMP
 #pragma omp parallel for
@@ -341,6 +346,8 @@ namespace RVO {
 		defaultAgent_->timeHorizonObst_ = timeHorizonObst;
 		defaultAgent_->velocity_ = velocity;
 	}
+
+	//…Ë÷√Ãÿ ‚Agent
 
 	void RVOSimulator::setAgentMaxNeighbors(size_t agentNo, size_t maxNeighbors)
 	{

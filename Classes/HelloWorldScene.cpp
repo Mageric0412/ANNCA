@@ -3,6 +3,7 @@
 USING_NS_CC;
 #define threshold 0.05
 #define EXITLENGTH    8  
+#define RVO_ON
 Scene* HelloWorld::createScene()
 {
     // 'scene' is an autorelease object
@@ -49,6 +50,7 @@ bool HelloWorld::init()
         return false;
     }
     s = Director::getInstance()->getWinSize();
+
     Vec2 origin = Director::getInstance()->getVisibleOrigin();
 
 	m_pData = new Crowd_TData(ANGLE_PATTERNS, NUM_VECIN);
@@ -57,9 +59,13 @@ bool HelloWorld::init()
 	
 	Crowd_Sim = new RVO::RVOSimulator();
 
+#ifdef RVO_ON
+	setupScenario2(Crowd_Sim);
+#endif
+#ifndef RVO_ON
 	setupScenario3(Crowd_Sim,RealAngle);
-	//setupScenario2(sim);
-	//buildRoadmap(sim);
+#endif
+	
 
     auto closeItem = MenuItemImage::create(
                                            "CloseNormal.png",
@@ -90,6 +96,10 @@ bool HelloWorld::init()
 	CCSprite *downButton = CCSprite::create("b1.png");
 	CCSprite *downButtoned= CCSprite::create("b2.png");
 
+	auto WBbg=CCSprite::create("bgWB.png");
+	//this->addChild(WBbg,0);
+	WBbg->setPosition(Vec2(s.width/2,s.height/2));
+
 	CCMenuItemSprite *trainBtn =CCMenuItemSprite::create(trainButton, trainButtoned, trainButton, this, menu_selector(HelloWorld::menuCallback));
 	CCMenuItemSprite *startBtn =CCMenuItemSprite::create(startButton, startButtoned, startButton, this, menu_selector(HelloWorld::menuCallback));
 	CCMenuItemSprite *resetBtn=CCMenuItemSprite::create(resultButton,resultButtoned,resultButton,this,menu_selector(HelloWorld::menuCallback));
@@ -108,20 +118,23 @@ bool HelloWorld::init()
 	resetBtn->setPositionY(s.height*0.1);
 	//resetBtn->setVisible(false);
 	
-	
 	CCMenu *menu2 = CCMenu::create(resetBtn,startBtn,NULL);
 	CCMenu *menu3=CCMenu::create(trainBtn,NULL);
 	CCMenu *menu4=CCMenu::create(upBtn,downBtn,NULL);
 
-	
+	//menu2->setScale(0.5);
 	menu2->setPosition(Vec2(s.width*0.8,s.height*0.8));
+	//menu3->setScale(0.5);
 	menu3->setPosition(Vec2(s.width*0.9,s.height*0.8));
+	//menu4->setScale(0.5);
 	menu4->setPosition(Vec2(s.width*0.4,s.height*0.8));
+	
 
 	this->addChild(menu2,1);
 	this->addChild(menu3,1);
 	this->addChild(menu4,1);
 	
+  
 
 	listener->onTouchBegan=CC_CALLBACK_2(HelloWorld::onTouchBegan,this);
 	listener->onTouchMoved=CC_CALLBACK_2(HelloWorld::onTouchMoved,this);
@@ -138,8 +151,10 @@ bool HelloWorld::init()
 		recordAgentAvoid.clear();
 		std::vector<bool> record;
 		addNewAgent(Vec2(Crowd_Sim->getAgentPosition(i).x(),Crowd_Sim->getAgentPosition(i).y()),i);
+        #ifndef RVO_ON
 		goals.push_back(RVO::Vector2(-Crowd_Sim->getAgentPosition(i).x(),Crowd_Sim->getAgentPosition(i).y()));
-		for (size_t j=0; j<Crowd_Sim->getNumAgents();++j)
+        #endif
+			for (size_t j=0; j<Crowd_Sim->getNumAgents();++j)
 		{
 		  recordAgentAvoid.push_back(0);
          // record.push_back(false);
@@ -147,51 +162,7 @@ bool HelloWorld::init()
 		recordAvoid.push_back(recordAgentAvoid);
 		recordpersist.push_back(0);
 	}
-
-	//goals.push_back(RVO::Vector2(-Crowd_Sim->getAgentPosition(0).x(),-Crowd_Sim->getAgentPosition(0).y()));
-	//goals.push_back(RVO::Vector2(direc,0));
-	//pos
-	CCSprite* agentflag=CCSprite::create("agent04.png");
-	CCSprite* agentflag2=CCSprite::create("agent04.png");
-	//deltavec
-	CCSprite* agentflag3=CCSprite::create("agent03.png");
-	CCSprite* agentflag4=CCSprite::create("agent03.png");
-    //veci
-	CCSprite* agentflag5=CCSprite::create("agent03.png");
-	CCSprite* agentflag6=CCSprite::create("agent03.png");
-	//vecj
-	CCSprite* agentflag7=CCSprite::create("agent03.png");
-	CCSprite* agentflag8=CCSprite::create("agent03.png");
-
 	
-	agentflag->setScale(0.3);
-	agentflag2->setScale(0.3);
-	agentflag3->setScale(0.3);
-	agentflag4->setScale(0.3);
-	agentflag5->setScale(0.3);
-	agentflag6->setScale(0.3);
-	agentflag7->setScale(0.3);
-	agentflag8->setScale(0.3);
-
-	this->addChild(agentflag,2,111);
-	this->addChild(agentflag2,2,112);
-	this->addChild(agentflag3,2,113);
-	this->addChild(agentflag4,2,114);
-	this->addChild(agentflag5,2,115);
-	this->addChild(agentflag6,2,116);
-	this->addChild(agentflag7,2,117);
-	this->addChild(agentflag8,2,118);
-
-    agentflag->setPosition(Vec2(s.width*0.2,s.height*0.25));
-	agentflag2->setPosition(Vec2(s.width*0.2,s.height*0.25));
-	agentflag3->setPosition(Vec2(s.width*0.4,s.height*0.3));
-	agentflag4->setPosition(Vec2(s.width*0.4,s.height*0.3));
-
-	agentflag5->setPosition(Vec2(s.width*0.6,s.height*0.3));
-	agentflag6->setPosition(Vec2(s.width*0.6,s.height*0.3));
-	agentflag7->setPosition(Vec2(s.width*0.8,s.height*0.3));
-	agentflag8->setPosition(Vec2(s.width*0.8,s.height*0.3));
-
 	label=CCLabelBMFont::create("DCAngle: 0","fonts/helvetica-32.fnt");
 	label1=CCLabelBMFont::create("iCAngle: 0","fonts/helvetica-32.fnt");
 	label2=CCLabelBMFont::create("jCAngle: 0","fonts/helvetica-32.fnt");
@@ -199,11 +170,11 @@ bool HelloWorld::init()
 	label4=CCLabelBMFont::create("ANN ErrorSum:","fonts/helvetica-32.fnt");
 	labelangle=CCLabelBMFont::create("Angle: 0","fonts/helvetica-32.fnt");
 
-	label->setScale(0.6);
-	label1->setScale(0.6);
-	label2->setScale(0.6);
-	label3->setScale(0.6);
-	label4->setScale(0.6);
+	label->setScale(0.2);
+	label1->setScale(0.2);
+	label2->setScale(0.2);
+	label3->setScale(0.2);
+	label4->setScale(0.5);
 	labelangle->setScale(0.5);
 
 	label->setPosition(Vec2(s.width*0.4,s.height*0.13));
@@ -219,8 +190,18 @@ bool HelloWorld::init()
 	this->addChild(label3,3,119);
 	this->addChild(label4,3,123);
 	this->addChild(labelangle,3,124);
-    //DrawPrimitives::drawRect(Vec2(s.width/2,s.height/2),Vec2(15,15));
     CCLOG("%lf,%lf",s.width,s.height);
+
+    #ifdef RVO_ON
+	menu4->setOpacity(0);
+	labelangle->setOpacity(0);
+    #endif
+
+	#ifndef RVO_ON
+	menu4->setOpacity(1);
+	labelangle->setOpacity(1);
+	#endif
+
 	scheduleUpdate();
     return true;
 }
@@ -353,46 +334,58 @@ void HelloWorld::draw(Renderer *renderer, const Mat4 &transform, uint32_t flags)
 }
 
 
-void HelloWorld::onDraw(const cocos2d::Mat4 &transform, bool transformUpdated)
+void HelloWorld::onDraw(const cocos2d::Mat4 &transform, uint32_t flags)
 {
+	
+
 	Director *director = Director::getInstance();
+	
+    #ifdef RVO_ON
+	   started =true;
+    #endif
+	if (started)
+	{
+		for (int i=0;i<Crowd_Sim->getNumAgents();i++)
+		{
+			curPos[i]=this->getChildByTag(i)->getPosition();
+			if (lastPos[i]!=curPos[i])
+			{
+				agentPos[i].push_back(curPos[i]);
+			}
+		}
+		
+	}
+	
 	//CCASSERT(nullptr != director, "Director is null when setting matrix stack");
 	director->pushMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW);
 	director->loadMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW, transform);
 	//绘制实时相对位置，相对速度、各agent速度
 	CHECK_GL_ERROR_DEBUG();
-	glLineWidth(1);
-	DrawPrimitives::setDrawColor4B(255, 0, 0, 255);
-	DrawPrimitives::drawLine(Vec2(s.width*0.2,s.height*0.25),Vec2(s.width*0.2+drawpos.x*6,s.height*0.25+drawpos.y*6));
-	DrawPrimitives::drawLine(Vec2(s.width*0.4,s.height*0.3),Vec2(s.width*0.4+drawvec.x*60*drawveclength/(normallength*normallength),s.height*0.3+drawvec.y*60*drawveclength/(normallength*normallength)));
-	DrawPrimitives::drawLine(Vec2(s.width*0.6,s.height*0.3),Vec2(s.width*0.6+agentveci.x*60*agentveci.length()/(agentvecinormlength*agentvecinormlength),s.height*0.3+agentveci.y*60*agentveci.length()/(agentvecinormlength*agentvecinormlength)));
-	DrawPrimitives::drawLine(Vec2(s.width*0.8,s.height*0.3),Vec2(s.width*0.8+agentvecj.x*60*agentvecj.length()/(agentvecjnormlength*agentvecjnormlength),s.height*0.3+agentvecj.y*60*agentvecj.length()/(agentvecjnormlength*agentvecjnormlength)));
+	glLineWidth(2);
+	
+	//每次存储一次绘制坐标，再次绘制
+	
+	for (int i=0;i<Crowd_Sim->getNumAgents();i++)
+	{
+		DrawPrimitives::setDrawColor4B(GLubyte(colorVec[i*3]), GLubyte(colorVec[i*3+1]), GLubyte(colorVec[i*3+2]), GLubyte(50));
+		for (int j=0;j<agentPos[i].size()-1;j++)
+		{
+			DrawPrimitives::drawLine(agentPos[i][j],agentPos[i][j+1]);
+		}
 
+	}
+		
+	
 	CHECK_GL_ERROR_DEBUG();
 	director->popMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW);
+	
+    for (int i=0;i<Crowd_Sim->getNumAgents();i++)
+    {
+		lastPos[i]=curPos[i];
 
-	//绘制初始相对速度基、各agent初始速度基
-	director->pushMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW);
-	director->loadMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW, transform);
-	CHECK_GL_ERROR_DEBUG();
-	glLineWidth(1);
-	DrawPrimitives::setDrawColor4B(0, 0, 255, 255);
-	DrawPrimitives::drawLine(Vec2(s.width*0.4,s.height*0.3),Vec2(s.width*0.4+drawnormVec.x*60/normallength,s.height*0.3+drawnormVec.y*60/normallength));
-	DrawPrimitives::drawLine(Vec2(s.width*0.6,s.height*0.3),Vec2(s.width*0.6+drawnormVeci.x*60/agentvecinormlength,s.height*0.3+drawnormVeci.y*60/agentvecinormlength));
-	DrawPrimitives::drawLine(Vec2(s.width*0.8,s.height*0.3),Vec2(s.width*0.8+drawnormVecj.x*60/agentvecjnormlength,s.height*0.3+drawnormVecj.y*60/agentvecjnormlength));
-	CHECK_GL_ERROR_DEBUG();
-	director->popMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW);
-	//绘制初始相对速度、各agent初始速度
-	director->pushMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW);
-	director->loadMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW, transform);
-	CHECK_GL_ERROR_DEBUG();
-	glLineWidth(1);
-	DrawPrimitives::setDrawColor4B(0, 255, 0, 255);
-	DrawPrimitives::drawLine(Vec2(s.width*0.4,s.height*0.3),Vec2(s.width*0.4+drawnormVec.x*60*drawveclength/(normallength*normallength),s.height*0.3+drawnormVec.y*60*drawveclength/(normallength*normallength)));
-	DrawPrimitives::drawLine(Vec2(s.width*0.6,s.height*0.3),Vec2(s.width*0.6+drawnormVeci.x*60*drawnormVeci.length()/(agentvecinormlength*agentvecinormlength),s.height*0.3+drawnormVeci.y*60*drawnormVeci.length()/(agentvecinormlength*agentvecinormlength)));
-	DrawPrimitives::drawLine(Vec2(s.width*0.8,s.height*0.3),Vec2(s.width*0.8+drawnormVecj.x*60*drawnormVecj.length()/(agentvecjnormlength*agentvecjnormlength),s.height*0.3+drawnormVecj.y*60*drawnormVecj.length()/(agentvecjnormlength*agentvecjnormlength)));
-	CHECK_GL_ERROR_DEBUG();
-	director->popMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW);
+    }
+     
+	
 }	
 
 //判断方向
@@ -583,21 +576,12 @@ void HelloWorld::addObstacle2()
 
 
 
-//void HelloWorld::addNewAgent(Vec2 p,int i)
-//{
-//	
-//	auto BatchNode=static_cast<SpriteBatchNode*>( getChildByTag(1));
-//	auto sprite = Sprite::createWithTexture(BatchNode->getTexture());
-//    sprite->setColor(Color3B(rand()%255,rand()%255,rand()%255));
-//	sprite->setScale(0.8);
-//	BatchNode->addChild(sprite,0,i);
-//	CCLOG("%lf,%lf",sprite->getContentSize().width,sprite->getContentSize().height);
-//	sprite->setPosition( Vec2( p.x*3+s.width/2, p.y*3+s.height/2) );
-//	agentno++;
-//}
+
 
 void HelloWorld::addNewAgent(Vec2 p,int i)
 {  
+	 std::vector<Vec2> tmpVec;
+	 tmpVec.push_back(Vec2(0,0));
 	  char str[100] = {0};
 	   int choice=i%2+1;  
       sprintf(str, "agent%02d.png",choice);
@@ -605,8 +589,14 @@ void HelloWorld::addNewAgent(Vec2 p,int i)
 	  
 	  sprite->setScale(0.8);
 	   sprite->setPosition( Vec2( p.x*3+s.width/2, p.y*3+s.height/2) );
-	addChild(sprite,0,i);
-
+	   curPos.push_back(sprite->getPosition());
+	   tmpVec[0]=sprite->getPosition();
+	   agentPos.push_back(tmpVec);
+	   lastPos.push_back(sprite->getPosition());
+	addChild(sprite,1,i);
+	colorVec.push_back(rand()%255);
+	colorVec.push_back(rand()%255);
+	colorVec.push_back(rand()%255);
 }
 
 
@@ -668,9 +658,29 @@ void HelloWorld::addTrackflag(int i,int j,int field)
 
 void HelloWorld::update(float dt)
 {
-	ai=aj=999;
 	//auto BatchNode=static_cast<SpriteBatchNode*>( getChildByTag(1));
 	labelangle->setString(CCString::createWithFormat("Angle:%.1f",RealAngle)->getCString());
+
+#ifdef RVO_ON
+ 
+	  if(!reachedGoal(Crowd_Sim))
+	  {
+	    setPreferredVelocities(Crowd_Sim);
+	    Crowd_Sim->doStep();
+
+		for (size_t i=0; i<Crowd_Sim->getNumAgents();i++)
+		{
+			//CCSprite* sp=(CCSprite*)BatchNode->getChildByTag(i);
+			CCSprite* sp=(CCSprite*)this->getChildByTag(i);
+			sp->setPosition(Vec2(Crowd_Sim->getAgentPosition(i).x()*3+s.width/2,Crowd_Sim->getAgentPosition(i).y()*3+s.height/2));
+		
+		}
+	  }
+	  
+#endif
+	 
+#ifndef RVO_ON
+
 	//ANN训练的实时显示
   if(!finished)
    {	
@@ -689,6 +699,8 @@ void HelloWorld::update(float dt)
 
  else if(started&&finished)
   {
+	
+
 	if(!reachedGoal(Crowd_Sim,goals))
 	{	
 		//if(!persisted)
@@ -784,6 +796,8 @@ void HelloWorld::update(float dt)
 	}
 	//setPreferredVelocities(Crowd_Sim);
 	Crowd_Sim->doStep();
+
+
 	}
 	else
 	{ 
@@ -791,6 +805,7 @@ void HelloWorld::update(float dt)
 	}
 
   }
+  #endif
 }
 
 
