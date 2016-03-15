@@ -92,6 +92,7 @@ void setupScenario(RVO::RVOSimulator *sim)
 
 void setupScenario2(RVO::RVOSimulator *sim)
 {
+	goals.clear();
      float   xoffense=50.0f,offense=20;
 	//std::srand(static_cast<unsigned int>(std::time(0)));
 	 float off=2;
@@ -110,15 +111,15 @@ void setupScenario2(RVO::RVOSimulator *sim)
 	goals.push_back(RVO::Vector2(-xoffense ,0+off));
 	sim->addAgent(RVO::Vector2(-xoffense ,0),8,5,6.0f,3.0f,2.8f,10.0f);
 	goals.push_back(RVO::Vector2(xoffense ,0+off));
-	sim->addAgent(RVO::Vector2(xoffense - 4,  offense+3),5,5,6.0f,2.0f,1.5f,3.0f);
+	sim->addAgent(RVO::Vector2(xoffense - 4,  offense+3),2,5,6.0f,2.0f,1.5f,3.0f);
 	goals.push_back(RVO::Vector2(-xoffense -4,offense+3+off));
-	sim->addAgent(RVO::Vector2(xoffense - 4,  offense/2+3),5,5,6.0f,2.0f,2.9f,3.0f);
+	sim->addAgent(RVO::Vector2(xoffense - 4,  offense/2+3),7,5,6.0f,2.0f,3.4f,9.0f);
 	goals.push_back(RVO::Vector2(-xoffense -4,offense/2+3+off));
 
 	
 	sim->addAgent(RVO::Vector2(-xoffense -4,offense+3),11,5,6.0f,5.0f,2.5f,8.0f);
 	goals.push_back(RVO::Vector2(xoffense -4,offense+3+off));
-	sim->addAgent(RVO::Vector2(-xoffense - 4,  offense/2+3),5,5,6.0f,2.0f,2.6f,3.0f);
+	sim->addAgent(RVO::Vector2(-xoffense - 4,  offense/2+3),5,5,6.0f,2.0f,1.6f,3.0f);
 	goals.push_back(RVO::Vector2(xoffense -4,offense/2+3+off));
 
 	sim->addAgent(RVO::Vector2(xoffense +5,  -offense),8,7,8.0f,3.0f,1.1f,7.0f);
@@ -203,13 +204,6 @@ void setupScenario3(RVO::RVOSimulator *sim,float angl)
 	sim->setAgentDefaults(15.0f, 6, 10.0f, 5.0f, 2.5f, 3.0f);
 	
 
-	/*sim->addAgent(RVO::Vector2(xoffense ,0));
-	sim->addAgent(RVO::Vector2(-xoffense ,0));
-	sim->addAgent(RVO::Vector2(xoffense - 4,  offense+3));
-	sim->addAgent(RVO::Vector2(-xoffense -4,offense+3));
-	sim->addAgent(RVO::Vector2(xoffense +5,  -offense));
-	sim->addAgent(RVO::Vector2(-xoffense -10,-offense));
-*/
 	
 	sim->addAgent(RVO::Vector2(xoffense ,0));	
 	sim->addAgent(RVO::Vector2(-xoffense ,0));	

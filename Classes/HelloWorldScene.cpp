@@ -1,8 +1,8 @@
 #include "HelloWorldScene.h"
 #include <math.h>
 USING_NS_CC;
-#define threshold 0.05
-#define EXITLENGTH    8  
+#define threshold 0.05 
+
 #define RVO_ON
 Scene* HelloWorld::createScene()
 {
@@ -97,7 +97,7 @@ bool HelloWorld::init()
 	CCSprite *downButtoned= CCSprite::create("b2.png");
 
 	auto WBbg=CCSprite::create("bgWB.png");
-	//this->addChild(WBbg,0);
+	this->addChild(WBbg,-1);
 	WBbg->setPosition(Vec2(s.width/2,s.height/2));
 
 	CCMenuItemSprite *trainBtn =CCMenuItemSprite::create(trainButton, trainButtoned, trainButton, this, menu_selector(HelloWorld::menuCallback));
@@ -116,16 +116,15 @@ bool HelloWorld::init()
 	upBtn->setPositionX(s.width*0.2);
 	downBtn->setTag(305);
 	resetBtn->setPositionY(s.height*0.1);
-	//resetBtn->setVisible(false);
 	
 	CCMenu *menu2 = CCMenu::create(resetBtn,startBtn,NULL);
 	CCMenu *menu3=CCMenu::create(trainBtn,NULL);
 	CCMenu *menu4=CCMenu::create(upBtn,downBtn,NULL);
 
 	//menu2->setScale(0.5);
-	menu2->setPosition(Vec2(s.width*0.8,s.height*0.8));
+	menu2->setPosition(Vec2(s.width*0.75,s.height*0.8));
 	//menu3->setScale(0.5);
-	menu3->setPosition(Vec2(s.width*0.9,s.height*0.8));
+	menu3->setPosition(Vec2(s.width*0.85,s.height*0.8));
 	//menu4->setScale(0.5);
 	menu4->setPosition(Vec2(s.width*0.4,s.height*0.8));
 	
@@ -168,7 +167,7 @@ bool HelloWorld::init()
 	label2=CCLabelBMFont::create("jCAngle: 0","fonts/helvetica-32.fnt");
 	label3=CCLabelBMFont::create("DeltaPosition","fonts/helvetica-32.fnt");
 	label4=CCLabelBMFont::create("ANN ErrorSum:","fonts/helvetica-32.fnt");
-	labelangle=CCLabelBMFont::create("Angle: 0","fonts/helvetica-32.fnt");
+	labelangle=CCLabelBMFont::create("相遇角度: 0","fonts/helvetica-32.fnt");
 
 	label->setScale(0.2);
 	label1->setScale(0.2);
@@ -193,13 +192,18 @@ bool HelloWorld::init()
     CCLOG("%lf,%lf",s.width,s.height);
 
     #ifdef RVO_ON
-	menu4->setOpacity(0);
-	labelangle->setOpacity(0);
+	menu4->setVisible(false);
+	label->setVisible(false);
+	label1->setVisible(false);
+	label2->setVisible(false);
+	label3->setVisible(false);
+	label4->setVisible(false);
+	labelangle->setVisible(false);
     #endif
 
 	#ifndef RVO_ON
-	menu4->setOpacity(1);
-	labelangle->setOpacity(1);
+	menu4->setVisible(true);
+	labelangle->setVisible(true);
 	#endif
 
 	scheduleUpdate();
@@ -212,11 +216,14 @@ void HelloWorld::menuCallback(CCObject *pSender)
 	CCMenuItemSprite *item = (CCMenuItemSprite*)pSender;
 	if(item->getTag() == 303)
 	{   
-	//fclose(fp1);
-	//CCScene *s=HelloWorld::createScene();
-	//CCDirector::sharedDirector()->replaceScene(CCTransitionFade::create(0.5f, s));
-	Reset_Agent(RealAngle,direc);
-	persisted=false;
+#ifdef RVO_ON
+
+#endif
+
+#ifndef RVO_ON
+		Reset_Agent(RealAngle,direc);
+		persisted=false;
+#endif
 	}
 	else if(item->getTag()==302)
 	{
@@ -257,6 +264,7 @@ void HelloWorld::Reset_Agent(float angle,float xoffense)
 	float xo=cosf(P/180*angle)*xoffense;
 	float yo=sinf(P/180*angle)*xoffense;
 	
+
 	Crowd_Sim->setAgentPosition(0,RVO::Vector2(xoffense ,0));
 	Crowd_Sim->setAgentPosition(1,RVO::Vector2(-xoffense,0));
 	Crowd_Sim->setAgentPosition(2,RVO::Vector2(xoffense - 4,  offense+3));
@@ -341,7 +349,6 @@ void HelloWorld::onDraw(const cocos2d::Mat4 &transform, uint32_t flags)
 	Director *director = Director::getInstance();
 	
     #ifdef RVO_ON
-	   started =true;
     #endif
 	if (started)
 	{
@@ -361,13 +368,13 @@ void HelloWorld::onDraw(const cocos2d::Mat4 &transform, uint32_t flags)
 	director->loadMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW, transform);
 	//绘制实时相对位置，相对速度、各agent速度
 	CHECK_GL_ERROR_DEBUG();
-	glLineWidth(2);
+	glLineWidth(1);
 	
 	//每次存储一次绘制坐标，再次绘制
 	
 	for (int i=0;i<Crowd_Sim->getNumAgents();i++)
 	{
-		DrawPrimitives::setDrawColor4B(GLubyte(colorVec[i*3]), GLubyte(colorVec[i*3+1]), GLubyte(colorVec[i*3+2]), GLubyte(50));
+		DrawPrimitives::setDrawColor4B(GLubyte(colorVec[i*3]), GLubyte(colorVec[i*3+1]), GLubyte(colorVec[i*3+2]), GLubyte(250));
 		for (int j=0;j<agentPos[i].size()-1;j++)
 		{
 			DrawPrimitives::drawLine(agentPos[i][j],agentPos[i][j+1]);
@@ -587,16 +594,24 @@ void HelloWorld::addNewAgent(Vec2 p,int i)
       sprintf(str, "agent%02d.png",choice);
       auto sprite=Sprite::create(str);
 	  
+	  int r=rand()%255;
+	  int g=rand()%255;
+	  int b=rand()%255;
+	  colorVec.push_back(r);
+	  colorVec.push_back(g);
+	  colorVec.push_back(b);
+
+	  
 	  sprite->setScale(0.8);
 	   sprite->setPosition( Vec2( p.x*3+s.width/2, p.y*3+s.height/2) );
+	   Color3B colr=Color3B(GLubyte(r),GLubyte(g),GLubyte(b));
+	   sprite->setColor(colr);
 	   curPos.push_back(sprite->getPosition());
 	   tmpVec[0]=sprite->getPosition();
 	   agentPos.push_back(tmpVec);
 	   lastPos.push_back(sprite->getPosition());
-	addChild(sprite,1,i);
-	colorVec.push_back(rand()%255);
-	colorVec.push_back(rand()%255);
-	colorVec.push_back(rand()%255);
+	   addChild(sprite,1,i);
+	
 }
 
 
@@ -662,7 +677,8 @@ void HelloWorld::update(float dt)
 	labelangle->setString(CCString::createWithFormat("Angle:%.1f",RealAngle)->getCString());
 
 #ifdef RVO_ON
- 
+    if(started)
+	{
 	  if(!reachedGoal(Crowd_Sim))
 	  {
 	    setPreferredVelocities(Crowd_Sim);
@@ -676,7 +692,8 @@ void HelloWorld::update(float dt)
 		
 		}
 	  }
-	  
+	}
+	
 #endif
 	 
 #ifndef RVO_ON
